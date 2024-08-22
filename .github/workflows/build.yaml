@@ -4,7 +4,6 @@ on:
   push:
     branches: [ main ]
     paths: [ 'containers/**' ]
-    tags: [ '*' ]
   pull_request:
     branches: [ main ]
     paths: [ 'containers/**' ]
