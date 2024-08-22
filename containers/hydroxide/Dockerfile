@@ -7,7 +7,11 @@ FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
 WORKDIR /src
 
 # Clone hydroxide
-RUN git clone https://github.com/emersion/hydroxide.git /src
+ARG HYDROXIDE_VERSION=v0.2.29
+RUN git clone \
+    --depth 1 \
+    --branch $HYDROXIDE_VERSION \
+    https://github.com/emersion/hydroxide.git /src
 
 # Download dependencies
 RUN --mount=type=cache,target=/go/pkg/mod/ \
