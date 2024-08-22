@@ -1,0 +1,111 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'containers/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'containers/**' ]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # Gets all changed containers and initiates the build for each of them.
+  changed-containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed_files
+        uses: tj-actions/changed-files@v45
+
+      - name: List all changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+        run: |
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
+
+      - name: Get all directories in containers dir that have changed files
+        id: changed_dirs
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+        # Extracts the name of the directory from the file path and creates a unique set of directories.
+        # If the directory isn't in the containers directory, it will be ignored.
+        # Example: containers/app1/Dockerfile -> app1
+        # Outputs the list of directories to the $GITHUB_OUTPUT file in json format.
+        # Example: ["app1", "app2"]
+        run: |
+          changed_dirs=()
+          for file in ${ALL_CHANGED_FILES}; do
+              dir=$(dirname $file)
+              if [[ $dir == "containers"* ]]; then
+              dir=$(echo $dir | cut -d'/' -f2)
+              changed_dirs+=($dir)
+              fi
+          done
+          changed_dirs=($(echo "${changed_dirs[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+          changed_dirs=$(jq --compact-output --null-input '$ARGS.positional' --args -- "${changed_dirs[@]}")
+          echo "Changed directories: ${changed_dirs}"
+          echo "changed_dirs=${changed_dirs}" >> $GITHUB_OUTPUT
+
+    outputs:
+      changed_dirs: ${{ steps.changed_dirs.outputs.changed_dirs }}
+
+  # Builds the Docker images for the changed containers.
+  build-containers:
+    needs: changed-containers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    if: ${{ needs.changed-containers.outputs.changed_dirs != '[]' }}
+    strategy:
+      matrix:
+        container: ${{ fromJson(needs.changed-containers.outputs.changed_dirs) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      # Login to the registry except for pull requests
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        env:
+          IMAGE_NAME: ${{ github.repository }}/${{ matrix.container }}
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=schedule,pattern=nightly
+            type=ref,event=branch
+            type=ref,event=pr
+            type=match,pattern=${{ matrix.container }}-(.*),group=1
+            type=sha
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: containers/${{ matrix.container }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
