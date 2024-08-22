@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 ################################################################################
 # FINAL STAGE
 ################################################################################
-FROM alpine:latest AS final
+FROM alpine:3.20 AS final
 
 # Install runtime dependencies
 RUN --mount=type=cache,target=/var/cache/apk \
