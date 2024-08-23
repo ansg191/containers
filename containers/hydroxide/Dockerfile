@@ -2,8 +2,7 @@
 ################################################################################
 # BUILD STAGE
 ################################################################################
-ARG GO_VERSION=1.17
-FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
+FROM --platform=$BUILDPLATFORM golang:1.23 AS build
 WORKDIR /src
 
 # Clone hydroxide
