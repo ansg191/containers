@@ -60,7 +60,7 @@ jobs:
       # Build and push Docker image with Buildx (don't push on PR)
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: containers/${{ steps.extract_container_name.outputs.container_name }}
           platforms: linux/amd64,linux/arm64
