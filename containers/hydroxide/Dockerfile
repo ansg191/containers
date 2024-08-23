@@ -55,4 +55,16 @@ COPY --from=build /bin/hydroxide /bin/
 
 ENV XDG_CONFIG_HOME=/config
 ENTRYPOINT [ "tini", "--" ]
-CMD [ "hydroxide", "serve" ]
+
+EXPOSE 1025 1143 8080
+
+CMD [ \
+    "hydroxide", \
+    "-smtp-host", \
+    "0.0.0.0", \
+    "-imap-host", \
+    "0.0.0.0", \
+    "-carddav-host", \
+    "0.0.0.0", \
+    "serve" \
+]
