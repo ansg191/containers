@@ -28,14 +28,22 @@ RUN tar -xzf tarsnap-autoconf-$TARSNAP_VERSION.tgz && \
 # Final stage
 FROM alpine:3.20.3 AS final
 
-# Install tini
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk --update add tini
+# Create a non-priviliged user
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    appuser
 
 # Copy binaries from the build stage
 COPY --from=build /app/bin/* /usr/local/bin/
 # Copy the tarsnap.conf file
 COPY tarsnap.conf /app/etc/tarsnap.conf
 
-ENTRYPOINT [ "tini", "--" ]
+USER appuser
+
 CMD [ "tarsnap" ]
