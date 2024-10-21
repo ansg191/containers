@@ -1,7 +1,7 @@
 ################################################################################
 # BUILD STAGE
 ################################################################################
-FROM --platform=$BUILDPLATFORM golang:1.23 AS build
+FROM --platform=$BUILDPLATFORM golang:1.23@sha256:ad5c126b5cf501a8caef751a243bb717ec204ab1aa56dc41dc11be089fafcb4f AS build
 WORKDIR /src
 
 # Clone hydroxide
@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 ################################################################################
 # FINAL STAGE
 ################################################################################
-FROM alpine:3.20 AS final
+FROM alpine:3.20@sha256:beefdbd8a1da6d2915566fde36db9db0b524eb737fc57cd1367effd16dc0d06d AS final
 
 # Install runtime dependencies
 RUN --mount=type=cache,target=/var/cache/apk \
