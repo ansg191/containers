@@ -134,6 +134,16 @@ def copy_backup(name: str) -> str:
     return dst_path
 
 
+def tarsnap_fsck():
+    logger.info('Running tarsnap --fsck')
+    child = subprocess.Popen(
+        ['tarsnap', '--fsck'],
+    )
+    ret = child.wait()
+    if ret != 0:
+        raise RuntimeError(f'tarsnap --fsck failed with exit code {ret}')
+
+
 def setup_tarsnap():
     # Check if tarsnapper is installed
     try:
@@ -152,16 +162,13 @@ def setup_tarsnap():
         raise RuntimeError(f'TARSNAPPER_CONFIG {TARSNAPPER_CONFIG} does not exist')
 
     # Run tarsnap --fsck
-    logger.info('Running tarsnap --fsck')
-    child = subprocess.Popen(
-        ['tarsnap', '--fsck'],
-    )
-    ret = child.wait()
-    if ret != 0:
-        raise RuntimeError(f'tarsnap --fsck failed with exit code {ret}')
+    tarsnap_fsck()
 
 
 def tarsnapper():
+    # Run tarsnap --fsck
+    tarsnap_fsck()
+
     # Run tarsnapper
     logger.info('Running tarsnapper')
 
