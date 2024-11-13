@@ -1,4 +1,4 @@
-FROM alpine:3.20.3@sha256:beefdbd8a1da6d2915566fde36db9db0b524eb737fc57cd1367effd16dc0d06d AS build
+FROM alpine:3.20.3@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a AS build
 
 # Install build dependencies
 RUN --mount=type=cache,target=/var/cache/apk \
@@ -26,7 +26,7 @@ RUN tar -xzf tarsnap-autoconf-$TARSNAP_VERSION.tgz && \
     make install
 
 # Final stage
-FROM alpine:3.20.3@sha256:beefdbd8a1da6d2915566fde36db9db0b524eb737fc57cd1367effd16dc0d06d AS final
+FROM alpine:3.20.3@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a AS final
 
 # Create a non-priviliged user
 ARG UID=10001
