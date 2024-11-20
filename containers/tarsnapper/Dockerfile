@@ -1,7 +1,7 @@
 ARG TARSNAP_VERSION=1.0.40
 FROM ghcr.io/ansg191/containers/tarsnap:v${TARSNAP_VERSION} AS tarsnap-base
 
-FROM python:3.13.0-alpine@sha256:d4daf858ce04f8e6f9a3f73d036f7a8dbb3b9541dccdb87e93993589449c5b9e
+FROM python:3.13.0-alpine@sha256:fcbcbbecdeae71d3b77445d9144d1914df55110f825ab62b04a66c7c33c09373
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
