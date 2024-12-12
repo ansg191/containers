@@ -1,7 +1,7 @@
 ################################################################################
 # BUILD STAGE
 ################################################################################
-FROM --platform=$BUILDPLATFORM golang:1.23@sha256:2b01164887cecfa796f6bff6787c8c597d0e0e09e0694428fdde4a343303eb60 AS build
+FROM --platform=$BUILDPLATFORM golang:1.23@sha256:70031844b8c225351d0bb63e2c383f80db85d92ba894e3da7e13bcf80efa9a37 AS build
 WORKDIR /src
 
 # Clone hydroxide
